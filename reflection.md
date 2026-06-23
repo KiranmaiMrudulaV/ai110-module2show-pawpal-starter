@@ -4,8 +4,17 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+Core user actions a pet owner should be able to perform:
+1. Add a pet with details (name, breed, species, age, and any ongoing medical conditions).
+2. Schedule recurring reminders for a pet — feedings, walks, medications, vet appointments.
+3. Store vet/doctor contact info and medication details tied to a specific pet.
+4. View today's task list showing everything that needs to happen for all pets.
+
+Classes and responsibilities:
+- **Task** — holds a single care activity (description, time, frequency, priority, completion status).
+- **Pet** — stores pet profile info and owns a list of Tasks.
+- **Owner** — holds the owner's name and a list of Pets; provides access to all tasks across pets.
+- **Scheduler** — the "brain" that retrieves tasks from the Owner's pets and organises/prioritises them.
 
 **b. Design changes**
 
