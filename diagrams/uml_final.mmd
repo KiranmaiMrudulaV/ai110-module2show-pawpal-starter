@@ -1,0 +1,72 @@
+classDiagram
+    class Task {
+        +str description
+        +str time
+        +date due_date
+        +str frequency
+        +str priority
+        +bool completed
+        +str dose_amount
+        +mark_complete() Task
+    }
+
+    class Supply {
+        +str name
+        +float quantity_bought
+        +float daily_amount
+        +date bought_date
+        +str unit
+        +int reminder_days_before
+        +days_remaining() int
+        +needs_reorder() bool
+    }
+
+    class MedicalCondition {
+        +str name
+        +date date_diagnosed
+        +str medication
+        +str dose
+        +str notes
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +str breed
+        +int age
+        +str vet_name
+        +str vet_phone
+        +str breed_info
+        +list tasks
+        +list supplies
+        +list medical_conditions
+        +add_task(task) None
+        +list_tasks() list
+        +get_pending_tasks() list
+        +add_supply(supply) None
+        +check_supplies() list
+    }
+
+    class Owner {
+        +str name
+        +list pets
+        +add_pet(pet) None
+        +get_all_tasks() list
+    }
+
+    class Scheduler {
+        +Owner owner
+        +get_todays_schedule() list
+        +get_weekly_schedule() dict
+        +get_schedule_range(days) dict
+        +sort_by_time(tasks) list
+        +filter_tasks(pet_name, completed) list
+        +detect_conflicts() list
+        +mark_task_complete(pet_name, task_desc) bool
+    }
+
+    Owner "1" --> "0..*" Pet : owns
+    Pet "1" --> "0..*" Task : has
+    Pet "1" --> "0..*" Supply : tracks
+    Pet "1" --> "0..*" MedicalCondition : has
+    Scheduler "1" --> "1" Owner : manages
