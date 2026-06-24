@@ -1,6 +1,10 @@
+import json
+import os
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Optional
+
+DATA_FILE = "data.json"
 
 
 @dataclass
@@ -10,6 +14,25 @@ class MedicalCondition:
     medication: str
     dose: str
     notes: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "date_diagnosed": self.date_diagnosed.isoformat(),
+            "medication": self.medication,
+            "dose": self.dose,
+            "notes": self.notes,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "MedicalCondition":
+        return cls(
+            name=d["name"],
+            date_diagnosed=date.fromisoformat(d["date_diagnosed"]),
+            medication=d["medication"],
+            dose=d["dose"],
+            notes=d.get("notes", ""),
+        )
 
 
 @dataclass
@@ -32,6 +55,27 @@ class Supply:
 
     def needs_reorder(self) -> bool:
         return self.days_remaining() <= self.reminder_days_before
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "quantity_bought": self.quantity_bought,
+            "daily_amount": self.daily_amount,
+            "bought_date": self.bought_date.isoformat(),
+            "unit": self.unit,
+            "reminder_days_before": self.reminder_days_before,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Supply":
+        return cls(
+            name=d["name"],
+            quantity_bought=d["quantity_bought"],
+            daily_amount=d["daily_amount"],
+            bought_date=date.fromisoformat(d["bought_date"]),
+            unit=d["unit"],
+            reminder_days_before=d.get("reminder_days_before", 3),
+        )
 
 
 
@@ -66,6 +110,29 @@ class Task:
                 dose_amount=self.dose_amount,
             )
         return None
+
+    def to_dict(self) -> dict:
+        return {
+            "description": self.description,
+            "time": self.time,
+            "due_date": self.due_date.isoformat(),
+            "frequency": self.frequency,
+            "priority": self.priority,
+            "completed": self.completed,
+            "dose_amount": self.dose_amount,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Task":
+        return cls(
+            description=d["description"],
+            time=d["time"],
+            due_date=date.fromisoformat(d["due_date"]),
+            frequency=d["frequency"],
+            priority=d["priority"],
+            completed=d["completed"],
+            dose_amount=d.get("dose_amount", ""),
+        )
 
 
 @dataclass
@@ -102,6 +169,36 @@ class Pet:
                 )
         return warnings
 
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "species": self.species,
+            "breed": self.breed,
+            "age": self.age,
+            "vet_name": self.vet_name,
+            "vet_phone": self.vet_phone,
+            "breed_info": self.breed_info,
+            "tasks": [t.to_dict() for t in self.tasks],
+            "supplies": [s.to_dict() for s in self.supplies],
+            "medical_conditions": [m.to_dict() for m in self.medical_conditions],
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Pet":
+        pet = cls(
+            name=d["name"],
+            species=d["species"],
+            breed=d.get("breed", ""),
+            age=d.get("age", 0),
+            vet_name=d.get("vet_name", ""),
+            vet_phone=d.get("vet_phone", ""),
+            breed_info=d.get("breed_info", ""),
+        )
+        pet.tasks = [Task.from_dict(t) for t in d.get("tasks", [])]
+        pet.supplies = [Supply.from_dict(s) for s in d.get("supplies", [])]
+        pet.medical_conditions = [MedicalCondition.from_dict(m) for m in d.get("medical_conditions", [])]
+        return pet
+
 
 
 @dataclass
@@ -118,6 +215,18 @@ class Owner:
             for task in pet.tasks:
                 result.append((pet, task))
         return result
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "pets": [p.to_dict() for p in self.pets],
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Owner":
+        owner = cls(name=d["name"])
+        owner.pets = [Pet.from_dict(p) for p in d.get("pets", [])]
+        return owner
 
 
 
@@ -184,4 +293,19 @@ class Scheduler:
                             pet.add_task(next_task)
                         return True
         return False
+
+
+def save_to_json(owner: Owner, filepath: str = DATA_FILE) -> None:
+    """Serialize the owner and all pets/tasks/supplies to a JSON file."""
+    with open(filepath, "w") as f:
+        json.dump(owner.to_dict(), f, indent=2)
+
+
+def load_from_json(filepath: str = DATA_FILE) -> Optional[Owner]:
+    """Load and reconstruct an Owner from a JSON file. Returns None if file missing."""
+    if not os.path.exists(filepath):
+        return None
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    return Owner.from_dict(data)
 

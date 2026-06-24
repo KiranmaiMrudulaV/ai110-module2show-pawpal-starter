@@ -1,14 +1,14 @@
 import streamlit as st
 from datetime import date
-from pawpal_system import Owner, Pet, Task, Supply, MedicalCondition, Scheduler
+from pawpal_system import Owner, Pet, Task, Supply, MedicalCondition, Scheduler, save_to_json, load_from_json
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="wide")
 
-# --- Session state init ---
+# --- Session state init: load from file on first run ---
 if "owner" not in st.session_state:
-    st.session_state.owner = None
-if "scheduler" not in st.session_state:
-    st.session_state.scheduler = None
+    saved = load_from_json()
+    st.session_state.owner = saved
+    st.session_state.scheduler = Scheduler(owner=saved) if saved else None
 
 PRIORITY_COLORS = {"high": "#ff4b4b", "medium": "#ffa500", "low": "#21c354"}
 
@@ -28,6 +28,7 @@ with st.sidebar:
     if st.button("Create / Reset Owner", use_container_width=True):
         st.session_state.owner = Owner(name=owner_name)
         st.session_state.scheduler = Scheduler(owner=st.session_state.owner)
+        save_to_json(st.session_state.owner)
         st.success(f"Welcome, {owner_name}!")
 
     if not st.session_state.owner:
@@ -60,6 +61,7 @@ with st.sidebar:
                     age=pet_age, vet_name=pet_vet_name, vet_phone=pet_vet_ph,
                     breed_info=pet_breed_info,
                 ))
+                save_to_json(owner)
                 st.success(f"Added {pet_name}!")
             else:
                 st.warning("Please enter a pet name.")
@@ -105,6 +107,7 @@ with tab1:
                 if not task.completed:
                     if st.button("Mark done", key=btn_key):
                         scheduler.mark_task_complete(pet.name, task.description)
+                        save_to_json(owner)
                         st.rerun()
                 else:
                     st.success("Done")
@@ -179,6 +182,7 @@ with tab4:
                             frequency=task_freq, priority=task_pri,
                             due_date=task_due, dose_amount=task_dose,
                         ))
+                        save_to_json(owner)
                         st.success(f"Task '{task_desc}' added to {target_pet}!")
                         break
             else:
@@ -207,6 +211,7 @@ with tab4:
                             daily_amount=sup_daily, bought_date=sup_bought,
                             unit=sup_unit, reminder_days_before=sup_remind,
                         ))
+                        save_to_json(owner)
                         st.success(f"Supply '{sup_name}' added to {sup_pet}!")
                         break
 
@@ -234,22 +239,28 @@ with tab5:
                     st.markdown(f"- {cond.name} (diagnosed {cond.date_diagnosed}) — {cond.medication} {cond.dose}")
 
             # Add medical condition inline
-            with st.form(f"med_{pet.name}"):
+            counter_key = f"med_counter_{pet.name}"
+            if counter_key not in st.session_state:
+                st.session_state[counter_key] = 0
+            counter = st.session_state[counter_key]
+
+            with st.form(f"med_{pet.name}_{counter}"):
                 st.markdown("Add medical condition")
                 c1, c2, c3 = st.columns(3)
                 with c1:
-                    mc_name = st.text_input("Condition", key=f"mc_name_{pet.name}")
-                    mc_diag = st.date_input("Date diagnosed", key=f"mc_diag_{pet.name}")
+                    mc_name = st.text_input("Condition")
+                    mc_diag = st.date_input("Date diagnosed")
                 with c2:
-                    mc_med  = st.text_input("Medication", key=f"mc_med_{pet.name}")
-                    mc_dose = st.text_input("Dose", key=f"mc_dose_{pet.name}")
+                    mc_med  = st.text_input("Medication")
+                    mc_dose = st.text_input("Dose")
                 with c3:
-                    mc_notes= st.text_area("Notes", key=f"mc_notes_{pet.name}", height=68)
+                    mc_notes = st.text_area("Notes", height=68)
                 if st.form_submit_button("Save condition"):
                     if mc_name:
                         pet.medical_conditions.append(MedicalCondition(
                             name=mc_name, date_diagnosed=mc_diag,
                             medication=mc_med, dose=mc_dose, notes=mc_notes,
                         ))
-                        st.success("Saved!")
+                        save_to_json(owner)
+                        st.session_state[counter_key] += 1
                         st.rerun()
