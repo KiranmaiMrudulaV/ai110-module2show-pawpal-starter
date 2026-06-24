@@ -1,50 +1,39 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+** is a smart pet care management system that helps owners stay on top of daily routines — feedings, walks, medications, vet appointments, and supplies — using algorithmic scheduling and a visual board-view UI.
 
-## Scenario
+---
 
-A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
+## Features
 
-- Track pet care tasks (walks, feeding, meds, enrichment, grooming, etc.)
-- Consider constraints (time available, priority, owner preferences)
-- Produce a daily plan and explain why it chose that plan
+- **Pet profiles** — store name, species, breed, age, vet name, vet phone, and breed/species notes per pet
+- **Task scheduling** — add tasks with time, due date, frequency (once / daily / weekly), priority (high / medium / low), and optional dose amount
+- **Board view** — Today Board and Weekly Board show tasks as color-coded cards (red = high, orange = medium, yellow = low, green = done), one row per pet/day
+- **Mark tasks done** — checkbox on each card marks the task complete; daily and weekly tasks automatically schedule the next occurrence
+- **Conflict detection** — warns when two tasks are scheduled at the same time
+- **Supply tracking** — tracks quantity bought, daily usage, and warns when stock is running low (configurable lead time)
+- **Medical conditions** — record diagnosis date, medication, dose, and notes per condition per pet
+- **Data persistence** — all data is saved to `data.json` so the app remembers everything between restarts
+- **4-Week list view** — expandable day-by-day task list for the next 28 days
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+---
 
-## What you will build
+## 📐 Smarter Scheduling
 
-Your final app should:
+| Feature | Method(s) | Notes |
+|---------|-----------|-------|
+| Sort by time | `Scheduler.sort_by_time()` | Uses `sorted()` with a lambda on the `time` string (HH:MM format sorts correctly as a string) |
+| Filter by pet / status | `Scheduler.filter_tasks(pet_name, completed)` | Returns only matching (Pet, Task) pairs |
+| Today's schedule | `Scheduler.get_todays_schedule()` | Pending tasks for today, sorted by time |
+| Schedule range | `Scheduler.get_schedule_range(days)` | Returns dict of `{date: [(pet, task)...]}` for N days ahead |
+| Conflict detection | `Scheduler.detect_conflicts()` | Flags any two tasks sharing the same time and due date; returns warning strings |
+| Recurring tasks | `Task.mark_complete()` + `Scheduler.mark_task_complete()` | Daily tasks reschedule +1 day, weekly tasks +7 days using `timedelta` |
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+---
 
-## Getting started
+## 🖥️ Sample CLI Output
 
-### Setup
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Suggested workflow
-
-1. Read the scenario carefully and identify requirements and edge cases.
-2. Draft a UML diagram (classes, attributes, methods, relationships).
-3. Convert UML into Python class stubs (no logic yet).
-4. Implement scheduling logic in small increments.
-5. Add tests to verify key behaviors.
-6. Connect your logic to the Streamlit UI in `app.py`.
-7. Refine UML so it matches what you actually built.
-
-## 🖥️ Sample Output
-
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Running `python main.py`:
 
 ```
 ====================================================
@@ -67,41 +56,81 @@ MARKING 'Morning walk' complete for Biscuit...
   Biscuit now has 4 tasks (added tomorrow's recurrence)
 ```
 
+---
+
+## 📸 Demo Walkthrough
+
+1. **Launch the app** — run `streamlit run app.py`. The sidebar loads your saved data automatically (or prompts you to enter your name if starting fresh).
+2. **Add a pet** — fill in the pet's name, species, breed, age, vet details, and any breed notes in the sidebar form. Click **Add Pet** — the form clears and the pet appears immediately.
+3. **Schedule tasks** — go to the **Add Task / Supply** tab. Pick a pet, describe the task (e.g. "Morning walk"), set the time, due date, frequency, and priority. Daily and weekly tasks will auto-reschedule when marked done.
+4. **View the Today Board** — the **Today Board** tab shows one row per pet. Each task appears as a color-coded card (red = high priority, orange = medium, yellow = low). Pending tasks come first sorted by time; completed tasks appear at the end in green with strikethrough text.
+5. **Mark a task done** — tick the **Done** checkbox on any card. The card turns green, moves to the end of the row, and if the task is daily or weekly the next occurrence is added automatically.
+6. **Check conflicts and supply warnings** — conflict warnings and low-supply alerts appear at the top of the Today Board so nothing is missed.
+7. **Weekly view** — the **Weekly Board** tab shows the same card layout but organized by day for the next 7 days.
+8. **4-Week list** — the **4-Week List** tab shows an expandable table for each day over the next 28 days.
+9. **Pet health** — the **Pets & Health** tab shows full profiles including medical conditions. Add a new condition directly from the expander; the form clears after saving.
+10. **Data persists** — close and reopen the app. All pets, tasks, supplies, and conditions reload from `data.json` automatically.
+
+---
+
 ## 🧪 Testing PawPal+
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
-# Run with coverage:
-pytest --cov
+# Run with verbose output:
+python -m pytest -v
 ```
 
-Sample test output:
+### What the tests cover
+
+| Test | What it verifies |
+|------|-----------------|
+| `test_task_mark_complete` | `mark_complete()` sets `completed = True` |
+| `test_add_task_increases_count` | Adding a task increases the pet's task list length |
+| `test_sort_by_time` | Tasks are returned in chronological (HH:MM) order |
+| `test_daily_recurrence` | Marking a daily task done creates a new task for the next day |
+| `test_conflict_detection` | Scheduler flags two tasks at the same time on the same date |
+
+### Test output
 
 ```
-# Paste your pytest output here
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0
+collecting ... collected 5 items
+
+tests/test_pawpal.py::test_task_mark_complete PASSED                     [ 20%]
+tests/test_pawpal.py::test_add_task_increases_count PASSED               [ 40%]
+tests/test_pawpal.py::test_sort_by_time PASSED                           [ 60%]
+tests/test_pawpal.py::test_daily_recurrence PASSED                       [ 80%]
+tests/test_pawpal.py::test_conflict_detection PASSED                     [100%]
+
+============================== 5 passed in 0.08s ==============================
 ```
 
-## 📐 Smarter Scheduling
+**Confidence level: ★★★★☆** — Core scheduling behaviors are fully verified. Time format validation and edge cases like empty pet lists or duplicate supply entries are areas for future testing.
 
-> Fill in once you've implemented scheduling logic.
+---
 
-| Feature | Method(s) | Notes |
-|---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+## Getting started
 
-## 📸 Demo Walkthrough
+### Setup
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+```bash
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+pip install -r requirements.txt
+```
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+### Run the app
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+```bash
+streamlit run app.py
+```
+
+### Run the CLI demo
+
+```bash
+python main.py
+```
