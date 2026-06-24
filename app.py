@@ -24,7 +24,8 @@ with st.sidebar:
 
     # Owner setup
     st.header("👤 Owner")
-    owner_name = st.text_input("Your name", value="Jordan")
+    existing_name = st.session_state.owner.name if st.session_state.owner else ""
+    owner_name = st.text_input("Your name", value=existing_name)
     if st.button("Create / Reset Owner", use_container_width=True):
         st.session_state.owner = Owner(name=owner_name)
         st.session_state.scheduler = Scheduler(owner=st.session_state.owner)
@@ -40,9 +41,12 @@ with st.sidebar:
 
     st.divider()
 
-    # Add pet
+    # Add pet — counter clears the form after each submission
     st.header("🐾 Add a Pet")
-    with st.form("add_pet_form"):
+    if "pet_form_counter" not in st.session_state:
+        st.session_state.pet_form_counter = 0
+
+    with st.form(f"add_pet_form_{st.session_state.pet_form_counter}"):
         col1, col2 = st.columns(2)
         with col1:
             pet_name    = st.text_input("Name")
@@ -62,7 +66,8 @@ with st.sidebar:
                     breed_info=pet_breed_info,
                 ))
                 save_to_json(owner)
-                st.success(f"Added {pet_name}!")
+                st.session_state.pet_form_counter += 1
+                st.rerun()
             else:
                 st.warning("Please enter a pet name.")
 
