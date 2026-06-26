@@ -52,6 +52,24 @@ def main():
     scheduler.mark_task_complete("Biscuit", "Morning walk")
     print(f"  Biscuit now has {len(biscuit.tasks)} tasks (added tomorrow's recurrence)")
 
+    print("\nSUGGESTED NEXT TASK:")
+    result = scheduler.suggest_next_task()
+    if result:
+        pet, task = result
+        print(f"  -> {pet.name}: '{task.description}' at {task.time} [{task.priority}] due {task.due_date}")
+    else:
+        print("  No pending tasks.")
+
+    print("\nOVERDUE TASKS:")
+    overdue = scheduler.get_overdue_tasks()
+    if overdue:
+        today = date.today()
+        for pet, task in overdue:
+            days = (today - task.due_date).days
+            print(f"  [!] {pet.name}: '{task.description}' — {days} day(s) overdue [{task.priority}]")
+    else:
+        print("  No overdue tasks.")
+
 
 if __name__ == "__main__":
     main()

@@ -283,6 +283,29 @@ class Scheduler:
         return warnings
 
 
+    def suggest_next_task(self) -> Optional[tuple]:
+        today = date.today()
+        priority_weight = {"high": 3, "medium": 2, "low": 1}
+        best = None
+        best_score = -1
+        for pet, task in self.owner.get_all_tasks():
+            if task.completed:
+                continue
+            days_overdue = max(0, (today - task.due_date).days)
+            score = priority_weight.get(task.priority, 1) * (1 + days_overdue)
+            if score > best_score:
+                best_score = score
+                best = (pet, task)
+        return best
+
+    def get_overdue_tasks(self) -> list:
+        today = date.today()
+        overdue = [
+            (pet, task) for pet, task in self.owner.get_all_tasks()
+            if not task.completed and task.due_date < today
+        ]
+        return sorted(overdue, key=lambda pair: (today - pair[1].due_date).days, reverse=True)
+
     def mark_task_complete(self, pet_name: str, task_desc: str) -> bool:
         for pet in self.owner.pets:
             if pet.name.lower() == pet_name.lower():

@@ -28,6 +28,8 @@
 | Schedule range | `Scheduler.get_schedule_range(days)` | Returns dict of `{date: [(pet, task)...]}` for N days ahead |
 | Conflict detection | `Scheduler.detect_conflicts()` | Flags any two tasks sharing the same time and due date; returns warning strings |
 | Recurring tasks | `Task.mark_complete()` + `Scheduler.mark_task_complete()` | Daily tasks reschedule +1 day, weekly tasks +7 days using `timedelta` |
+| Suggest next task | `Scheduler.suggest_next_task()` | Scores every pending task using `priority_weight × (1 + days_overdue)` (high=3, medium=2, low=1) and returns the highest-scoring `(pet, task)` pair |
+| Overdue tasks | `Scheduler.get_overdue_tasks()` | Returns all incomplete tasks whose `due_date` is before today, sorted by most overdue first |
 
 ---
 
