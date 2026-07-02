@@ -86,14 +86,28 @@ Running `python main.py`:
   [todo] 17:00  Biscuit     Evening walk          [medium]
   [todo] 18:00  Mochi       Playtime              [medium]
 
+PRIORITY-FIRST SCHEDULE:
+  [high  ] 07:30  Biscuit     Morning walk
+  [high  ] 08:00  Mochi       Feeding
+  [high  ] 08:00  Biscuit     Feeding
+  [high  ] 10:00  Mochi       Vet appointment
+  [medium] 17:00  Biscuit     Evening walk
+  [medium] 18:00  Mochi       Playtime
+
 CONFLICT CHECK:
-  [!] Conflict at 08:00 on 2026-06-23: Mochi's 'Feeding', Biscuit's 'Feeding'
+  [!] Conflict at 08:00 on 2026-07-02: Mochi's 'Feeding', Biscuit's 'Feeding'
 
 SUPPLY CHECK:
-  Biscuit: Low supply: Kibble - only 2 days left (grams)
+  Biscuit: Low supply: Kibble - only 0 days left (grams)
 
 MARKING 'Morning walk' complete for Biscuit...
   Biscuit now has 4 tasks (added tomorrow's recurrence)
+
+SUGGESTED NEXT TASK:
+  -> Mochi: 'Feeding' at 08:00 [high] due 2026-07-02
+
+OVERDUE TASKS:
+  No overdue tasks.
 ```
 
 ---

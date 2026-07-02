@@ -57,12 +57,14 @@ classDiagram
     class Scheduler {
         +Owner owner
         +get_todays_schedule() list
-        +get_weekly_schedule() dict
         +get_schedule_range(days) dict
         +sort_by_time(tasks) list
+        +sort_by_priority_then_time(tasks) list
         +filter_tasks(pet_name, completed) list
         +detect_conflicts() list
         +mark_task_complete(pet_name, task_desc) bool
+        +suggest_next_task() tuple
+        +get_overdue_tasks() list
     }
 
     Owner "1" --> "0..*" Pet : owns
