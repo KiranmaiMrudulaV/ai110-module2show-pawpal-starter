@@ -239,6 +239,12 @@ class Scheduler:
             tasks = self.owner.get_all_tasks()
         return sorted(tasks, key=lambda pair: pair[1].time)
 
+    def sort_by_priority_then_time(self, tasks: list = None) -> list:
+        if tasks is None:
+            tasks = self.owner.get_all_tasks()
+        priority_order = {"high": 0, "medium": 1, "low": 2}
+        return sorted(tasks, key=lambda pair: (priority_order.get(pair[1].priority, 1), pair[1].time))
+
     def filter_tasks(self, pet_name: str = None, completed: bool = None) -> list:
         results = self.owner.get_all_tasks()
         if pet_name is not None:

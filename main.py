@@ -35,6 +35,10 @@ def main():
         status = "done" if task.completed else "todo"
         print(f"  [{status}] {task.time}  {pet.name:10s}  {task.description:20s}  [{task.priority}]")
 
+    print("\nPRIORITY-FIRST SCHEDULE:")
+    for pet, task in scheduler.sort_by_priority_then_time():
+        print(f"  [{task.priority:6s}] {task.time}  {pet.name:10s}  {task.description}")
+
     print("\nCONFLICT CHECK:")
     conflicts = scheduler.detect_conflicts()
     if conflicts:
