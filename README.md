@@ -115,6 +115,40 @@ tests/test_pawpal.py::test_conflict_detection PASSED                     [100%]
 
 ---
 
+## Data Persistence
+
+PawPal+ automatically saves all data to `data.json` so nothing is lost between sessions.
+
+### What gets saved
+
+Every object in the system serializes itself via a `to_dict()` method:
+
+```
+Owner → pets[]
+  └── Pet → tasks[], supplies[], medical_conditions[]
+        ├── Task → description, time, due_date, frequency, priority, completed, dose_amount
+        ├── Supply → name, quantity_bought, daily_amount, bought_date, unit, reminder_days_before
+        └── MedicalCondition → name, date_diagnosed, medication, dose, notes
+```
+
+### When data is saved
+
+`save_to_json(owner)` is called in `app.py` after every user action:
+- Marking a task done
+- Adding a new pet
+- Adding a new task or supply
+- Adding a medical condition
+
+### When data is loaded
+
+On startup, `app.py` calls `load_from_json()`. If `data.json` exists it reconstructs the full `Owner` object via `from_dict()` on each class. If the file is missing (first run), the app starts fresh.
+
+### Why `data.json` is in `.gitignore`
+
+The file contains personal pet data specific to each user. Committing it would overwrite another user's data when they pull the repo. Each user's `data.json` lives only on their own machine.
+
+---
+
 ## Getting started
 
 ### Setup
