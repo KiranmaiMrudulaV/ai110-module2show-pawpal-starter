@@ -18,6 +18,43 @@
 
 ---
 
+## UI Formatting
+
+PawPal+ uses a kanban-style board view built with Streamlit and custom HTML/CSS.
+
+### Board layout
+
+Tasks are displayed as cards arranged in rows (one row per pet) and columns (one card per task). This makes it easy to scan all pets and their upcoming tasks at a glance without scrolling through a long list.
+
+### Card design
+
+Each card is built using `st.container(border=True)` with an inner `st.markdown(unsafe_allow_html=True)` block for custom styling:
+
+- **Colored top strip** — a 5px horizontal bar at the top of each card signals priority at a glance
+- **Priority badge** — a colored pill label (e.g. `HIGH`, `MEDIUM`, `LOW`) appears on each pending task card
+- **Done checkbox** — `st.checkbox` inside the container marks the task complete without leaving the card
+- **Details expander** — `st.expander("Details")` inside the same container shows pet name, vet info, dose, and medical conditions
+
+### Color coding
+
+| State | Strip color | Badge color |
+|-------|-------------|-------------|
+| High priority | Red `#dc3545` | Red |
+| Medium priority | Orange `#fd7e14` | Orange |
+| Low priority | Yellow `#ffc107` | Yellow |
+| Completed | Green `#28a745` | Green — text is struck through |
+
+### Horizontal scrolling
+
+When a pet has many tasks, the card row scrolls horizontally. This is enabled by injecting a CSS rule targeting Streamlit's internal `div[data-testid="stHorizontalBlock"]` via `st.markdown(unsafe_allow_html=True)`.
+
+### Libraries used
+
+- **Streamlit** — UI framework (`st.container`, `st.columns`, `st.checkbox`, `st.expander`, `st.tabs`, `st.form`)
+- **Custom HTML/CSS** — injected via `st.markdown(unsafe_allow_html=True)` for card styling, color strips, badges, and horizontal scroll
+
+---
+
 ## 📐 Smarter Scheduling
 
 | Feature | Method(s) | Notes |
